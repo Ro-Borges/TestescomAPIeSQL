@@ -19,6 +19,7 @@ dados = requisicao.json() ## A parte relevante é o .json() que vai retornar os 
 logradouro = dados["logradouro"] ## Salva uma variável apenas com um dos dados obtidos na requisição
 complemento = dados["complemento"]
 localidade = dados["localidade"]
+bairro = dados["bairro"]
 estado = dados["estado"]
 uf = dados["uf"]
 
@@ -27,16 +28,17 @@ print(f"{logradouro}, {complemento}, {localidade}, {estado} - {uf}")
 def criar_tabela(): ## função para criar a tabela onde salvarei os registros
     conectar = sqlite3.connect(DB_NOME)
     cursor = conectar.cursor() #isso  envia os comandos sql
-    consulta = sqlite3.connect(DB_NOME)
     
-    ### os """ são obrigaorios
-    cursor.execute(""" #enviando o comando para criar a tabela
+    ### os """ são obrigaorios #enviando o comando para criar a tabela
+    cursor.execute(""" 
                     CREATE TABLE IF NOT EXISTS enderecos (
                         id INTEGER PRIMARY KEY AUTOINCREMENT,
                         cep TEXT NOT NULL,
                         logradouro TEXT,
+                        complemento TEXT,
                         bairro TEXT,
                         localidade TEXT,
+                        estado TEXT,
                         uf TEXT
                     );
     """
@@ -46,20 +48,27 @@ def criar_tabela(): ## função para criar a tabela onde salvarei os registros
     conectar.close()
     
 def salvar_dados_API (cep, dados): #salvado os dados que vamos pegar
+
+    conectar = sqlite3.connect(DB_NOME)
+    cursor = conectar.cursor() #isso  envia os comandos sql 
+ 
     logradouro = dados.get("logradouro") 
     complemento = dados.get("complemento")
     localidade = dados.get("localidade")
     estado = dados.get("estado")
     uf = dados.get("uf")
     
-    cursor.executed("""
+    cursor.execute("""
         
         INSERT INTO enderecos (cep, logradouro, complemento, bairro, localidade, uf)
         VALUES (?, ?, ?, ?, ?, ?)
     """, (cep, logradouro, complemento, bairro, localidade, uf))
 
-    consulta.commit()
-    consulta.close()                
+    conectar.commit()
+    conectar.close()                
                     
     print("Endereço salvo no banco de dados (SQLite).")      
     
+#executando as duas funções (criação do e registro das informações nele) 
+criar_tabela()
+salvar_dados_API(cep, dados)
